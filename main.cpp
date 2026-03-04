@@ -6,25 +6,32 @@
 #include <string>
 #include <cstring>
 #include <unistd.h>
+#include <linux/limits.h> // For PATH_MAX
 #include <sys/wait.h>
 #include <fcntl.h>
 
 
 // main
 using namespace std;
+// prints current working directory
+string printWrkDir() {
+    char cwd[PATH_MAX];
 
+    string pwd = getcwd(cwd, sizeof(cwd));
+    return pwd;
+}
 int main(){
     
     //vector<string>hisVec = gethistory("hit.txt");
 	string line;
 
 	while(true){
-	    cout<<printWrkDir()<<"S";
+	    cout<< "\n" << printWrkDir()<<"$ ";
 	    getline(cin,line);
 	// 	hisvec.push_back(line); //updatehisFile(hisvec);
 
 		if(line == "exit") exit(0);
-	// 	elseif(line == "pwd") cout<<pwd();
+	 	else if (line == "pwd") cout<<printWrkDir();
 	// 	elseif(line == "history")printhis(hisVec);
 	// 	elseif(stdOutRed(line)>-1) {
 	// 		// part2 Proj3
@@ -46,17 +53,11 @@ int main(){
 }
 
 // functions
-vector<string>getHistory(string) {
-	string pwd; // Use shared C function from assignment
-}
+// vector<string>getHistory(string) {
+// 	string pwd; // Use shared C function from assignment
+// }
 
-// prints current working directory
-string printWrkDir() {
-    char cwd[PATH_MAX]
 
-    string pwd = getcwd(cwd, sizeof(cwd));
-    return pwd;
-}
 
 
 // hisvec() //Opens file  
