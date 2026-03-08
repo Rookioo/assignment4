@@ -3,6 +3,7 @@
 // Programmers: Joe / Dustin
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include <string>
 #include <cstring>
 #include <unistd.h>
@@ -13,6 +14,29 @@
 
 // main
 using namespace std;
+
+
+// functions
+ vector<string>getHistory(string fileName) {
+ 	// Use shared C function from assignment
+	vector<string> hisVec;
+
+   ifstream inFile;
+   inFile.open( fileName);
+   if (!inFile.is_open()) {
+	// file not found because this is the first command
+      return hisVec;
+   }
+   string line;
+   while (getline(inFile, line)) {
+      if (!line.empty()) {
+         hisVec.push_back(line);
+      }
+   }
+	return hisVec;
+ }
+
+
 // prints current working directory
 string printWrkDir() {
     char cwd[PATH_MAX];
@@ -20,19 +44,40 @@ string printWrkDir() {
     string pwd = getcwd(cwd, sizeof(cwd));
     return pwd;
 }
+
+// prints history from vector
+void printHis(vector<string>hisVec) {
+	for (size_t i = 0; i < hisVec.size(); i++) {
+		cout << i+1 << "  " << hisVec[i] << "\n";
+	}
+}
+
+
+// Updates history file with history vector
+void updatehisFile(const string& fileName, string line) {
+   ofstream outFile;
+   outFile.open(fileName, ios::app); // ios::app for append mode
+   if (!outFile.is_open()) {
+      cerr << "Error: could not write to file " << fileName << "\n";
+      return;
+   }
+   outFile << line << "\n";
+}
+
 int main(){
     
-    //vector<string>hisVec = gethistory("hit.txt");
+    vector<string>hisVec = getHistory("hit.txt");
 	string line;
 
 	while(true){
 	    cout<< "\n" << printWrkDir()<<"$ ";
 	    getline(cin,line);
-	// 	hisvec.push_back(line); //updatehisFile(hisvec);
+	 	hisVec.push_back(line); //
+		updatehisFile("hit.txt", line);
 
 		if(line == "exit") exit(0);
 	 	else if (line == "pwd") cout<<printWrkDir();
-	// 	elseif(line == "history")printhis(hisVec);
+	 	else if(line == "history") printHis(hisVec);
 	// 	elseif(stdOutRed(line)>-1) {
 	// 		// part2 Proj3
 	// 	}
@@ -52,14 +97,4 @@ int main(){
     return 0;
 }
 
-// functions
-// vector<string>getHistory(string) {
-// 	string pwd; // Use shared C function from assignment
-// }
 
-
-
-
-// hisvec() //Opens file  
-
-// void printHis(vectorstr>u){=}
