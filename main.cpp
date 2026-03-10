@@ -64,6 +64,35 @@ void updatehisFile(const string& fileName, string line) {
    outFile << line << "\n";
 }
 
+// tokenizing functions
+vector<string> splitTokens(char *input) {
+   vector<string> tokens;
+   const char *delims = " \t\n"; // split on spaces, tab, newlines
+
+   char *saveptr;
+   char *token = strtok_r(input, delims, &saveptr);
+   while (token != nullptr) {
+      tokens.push_back(string(token)); // store in C++ string
+      token = strtok_r(nullptr, delims, &saveptr);
+   }
+   return tokens;
+}
+
+char** copyToCArray(const vector<string>& tokens) {
+   char** c_array = new char*[tokens.size() + 1];
+
+   for (size_t i = 0; i < tokens.size(); i++) {
+   size_t len = tokens[i].size() + 1; // include null terminator
+   c_array[i] = new char[len];
+
+   strncpy(c_array[i], tokens[i].c_str(), len);
+   c_array[i][len - 1] = '\0'; // guarantee null terminator
+   }
+
+   c_array[tokens.size()] = NULL;
+   return c_array;
+}
+
 int main(){
     
     vector<string>hisVec = getHistory("hit.txt");
@@ -72,6 +101,8 @@ int main(){
 	while(true){
 	    cout<< "\n" << printWrkDir()<<"$ ";
 	    getline(cin,line);
+		if (line.empty()) continue;
+		
 	 	hisVec.push_back(line); //
 		updatehisFile("hit.txt", line);
 
@@ -89,10 +120,33 @@ int main(){
 	// 		// full twochildren_pipe_dup2-1.cpp
 	// 		// copy paste code except use only one input
 	// 	}
-	// 	else {
-	// 		// ls, ps, ./a.out, java j
-	// 		execvp(cmd[0], cmd)
-	// 	}
+		else { // normal command
+			char buffer[256];
+			strncpy(buffer, line.c_str(), sizeof(buffer));
+			buffer[sizeof(buffer)-1] = '\0';
+
+			vector<string> tokens = splitTokens(buffer);
+
+			char** cmd = copyToCArray(tokens);
+
+			pid_t pid = fork();
+			if (pid < 0) {
+				perror("Fork failed");
+			}
+			else if (pid == 0) {
+				execvp(cmd[0], cmd);
+				perror("execvp failed");
+				exit(1);
+			}
+			else {
+				wait(NULL);
+			}
+			
+			for (size_t i = 0; i < tokens.size(); i++) {
+				delete[] cmd[i];
+			}
+			delete[] cmd;
+		}
 	}
     return 0;
 }
