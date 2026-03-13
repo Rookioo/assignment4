@@ -160,7 +160,7 @@ void handlePiping(string line) {
         exit(1);
     }
 
-    // Parent has to close both and wait so the prompt doesn't get messed up;
+    // Parent has to close both and wait so the prompt doesn't get messed up    close(pipefd[0]);
     close(pipefd[1]);
     wait(NULL);
     wait(NULL);
@@ -208,7 +208,7 @@ int main(){
                 break;
             }
         }
-
+        
         if (hasPipe) {
         // Piping
         handlePiping(line); 
@@ -231,7 +231,7 @@ int main(){
         for (size_t i = 0; i < tokens.size(); i++) {
             delete[] cmd[i];
         }
-        delete[] cmd;     
+        delete[] cmd;
 	}
     return 0;
 }
