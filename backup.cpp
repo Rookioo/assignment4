@@ -78,21 +78,6 @@ vector<string> splitTokens(char *input) {
    return tokens;
 }
 
-char** copyToCArray(const vector<string>& tokens) {
-   char** c_array = new char*[tokens.size() + 1];
-
-   for (size_t i = 0; i < tokens.size(); i++) {
-   size_t len = tokens[i].size() + 1; // include null terminator
-   c_array[i] = new char[len];
-
-   strncpy(c_array[i], tokens[i].c_str(), len);
-   c_array[i][len - 1] = '\0'; // guarantee null terminator
-   }
-
-   c_array[tokens.size()] = NULL;
-   return c_array;
-}
-
 // Handling the < and > operators
 void handleRedirection(vector<char*>& args) {
     for (int i = 0; args[i] != NULL; i++) {
@@ -135,9 +120,10 @@ void handlePiping(string line) {
 
         // tokenize cmd1 here
         vector<char*> args1;
-        char* temp = strdup(part1.c_str());
-        char* token = strtok(temp, " ");
-        while(token) { args1.push_back(token); token = strtok(NULL, " "); }
+        char *buf1 = strdup(part1.c_str());
+        vector<string> t1 = splitTokens(buf1);
+        free(buf1);
+        for (auto &t : t1) args1.push_back(strdup(t.c_str()));
         args1.push_back(NULL);
         
         execvp(args1[0], args1.data());
@@ -151,16 +137,18 @@ void handlePiping(string line) {
         close(pipefd[0]);
 
         vector<char*> args2;
-        char* temp = strdup(part2.c_str());
-        char* token = strtok(temp, " ");
-        while(token) { args2.push_back(token); token = strtok(NULL, " "); }
+        char *buf2 = strdup(part2.c_str());
+        vector<string> t2 = splitTokens(buf2);
+        free(buf2);
+        for (auto &t : t2) args2.push_back(strdup(t.c_str()));
         args2.push_back(NULL);
 
         execvp(args2[0], args2.data());
         exit(1);
     }
 
-    // Parent has to close both and wait so the prompt doesn't get messed up    close(pipefd[0]);
+    // Parent has to close both and wait so the prompt doesn't get messed up    
+    close(pipefd[0]);
     close(pipefd[1]);
     wait(NULL);
     wait(NULL);
@@ -189,14 +177,12 @@ int main(){
         }
 
         // Tokenizing for external commands
-		vector<char*> args;
 		char* temp = strdup(line.c_str()); 
-		char* token = strtok(temp, " ");
-		while (token != NULL) {
-			args.push_back(token);
-			token = strtok(NULL, " ");
-		}
-		args.push_back(NULL);
+        vector<string> tokens = splitTokens(temp);
+        free(temp);
+        vector<char*> args;
+        for (auto &t : tokens) args.push_back(strdup(t.c_str()));
+        args.push_back(NULL);
 
 		if (args[0] == NULL) continue;
 
@@ -227,11 +213,6 @@ int main(){
                 wait(NULL);
             }
         }
-
-        for (size_t i = 0; i < tokens.size(); i++) {
-            delete[] cmd[i];
-        }
-        delete[] cmd;
 	}
     return 0;
 }
